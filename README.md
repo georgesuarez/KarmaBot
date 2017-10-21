@@ -1,0 +1,2 @@
+# KarmaBot
+Personal Discord bot
