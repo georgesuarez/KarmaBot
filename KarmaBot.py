@@ -3,6 +3,7 @@ import random
 import requests
 import praw
 import asyncio
+import os
 
 import imgurbot
 import prawbot
@@ -16,8 +17,6 @@ description = 'KarmaBot'
 bot_prefix = '!'
 
 bot = Bot(description=description, command_prefix=bot_prefix)
-
-client = discord.Client()
 
 """Authorizing Imgur API"""
 client_id = imgurbot.client_id
@@ -39,11 +38,14 @@ async def on_ready():
     print('ID : {}'.format(bot.user.id))
     print(discord.__version__)
     print('========')
+    await bot.change_presence(game=discord.Game(name='!reddit'))
+
 
 """Bot commands go here"""
 
 # Clear messages up to 14 days old
 # Can only clear up to 2 to 100 messages at a time
+
 
 @bot.command(pass_context=True)
 async def clear(ctx, number):
@@ -54,31 +56,28 @@ async def clear(ctx, number):
         messages_to_delete.append(x)
     await bot.delete_messages(messages_to_delete)
 
-
-# TODO: Find a to change the playing status of the bot
-@bot.command()
-async def game(*, game : str):
-    await bot.change_presence(game=discord.Game(name=game))
-    await bot.say('Changing game to: ' + game)
-
-
 # Imugr command v1.0.1
 
 
 @bot.command()
 async def imgur(query: str):
-
     subreddit = imgur_client.subreddit_gallery(
         query, sort='top', window='day', page=0)
 
     url_links = []
+    titles_of_link = []
 
     for submission in subreddit:
+        titles_of_link.append(submission.title)
         url_links.append(submission.link)
 
-    url_link = random.choice(url_links)
+    submissions = dict(zip(titles_of_link, url_links))
 
-    await bot.say(url_link)
+    title, url_link = random.choice(list(submissions.items()))
+
+    embed = discord.Embed(title=title, url=url_link, color=0xff0404)
+    embed.set_image(url=url_link)
+    await bot.say(embed=embed)
 
 # Reddit command v1.0.1
 
@@ -86,14 +85,26 @@ async def imgur(query: str):
 @bot.command()
 async def reddit(query: str):
     subreddit = redditbot.subreddit(query)
+    title_of_links = []
     url_links = []
 
-    for submission in subreddit.top(limit=50):
+    for submission in subreddit.hot(limit=50):
+        title_of_links.append(submission.title)
         url_links.append(submission.url)
 
-    url_link = random.choice(url_links)
+    submissions = dict(zip(title_of_links, url_links))
 
-    await bot.say(url_link)
+    title, url_link = random.choice(list(submissions.items()))
+
+    embed = discord.Embed(title=title, url=url_link, color=0xff0404)
+    embed.set_image(url=url_link)
+    await bot.say(embed=embed)
+
+
+@bot.command()
+async def BBB():
+    its_about_that_time = 'https://streamable.com/fu61x'
+    await bot.say(its_about_that_time)
 
 # Always put this last!!!
 bot.run(bot_token.token)
