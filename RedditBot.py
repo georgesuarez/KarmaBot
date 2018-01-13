@@ -20,19 +20,17 @@ bot_prefix = '!'
 
 bot = Bot(description=description, command_prefix=bot_prefix)
 
-"""Authorizing Imgur API"""
+# Authorizing Imgur API
 client_id = imgurbot.client_id
 client_secret = imgurbot.client_secret
 imgur_client = ImgurClient(client_id, client_secret)
 
-"""Authorizing Reddit API"""
+# Authorizing Reddit API
 redditbot = praw.Reddit(client_id=prawbot.client_id,
                         client_secret=prawbot.client_secret,
                         user_agent=prawbot.user_agent)
 
 """Log in the discord bot"""
-
-
 @bot.event
 async def on_ready():
     print('Logged in')
@@ -47,8 +45,6 @@ async def on_ready():
 
 # Clear messages up to 14 days old
 # Can only clear up to 2 to 100 messages at a time
-
-
 @bot.command(pass_context=True)
 async def clear(ctx, number):
     number = int(number)
@@ -57,9 +53,6 @@ async def clear(ctx, number):
     async for x in bot.logs_from(ctx.message.channel, limit=number):
         messages_to_delete.append(x)
     await bot.delete_messages(messages_to_delete)
-
-# Imugr command v1.0.1
-
 
 @bot.command()
 async def imgur(query: str):
@@ -80,9 +73,6 @@ async def imgur(query: str):
     embed = discord.Embed(title=title, url=url_link, color=0xff0404)
     embed.set_image(url=url_link)
     await bot.say(embed=embed)
-
-# Reddit command v1.0.1
-
 
 @bot.command()
 async def reddit(query: str):
