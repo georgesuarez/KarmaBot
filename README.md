@@ -1,5 +1,5 @@
 # KarmaBot
-My Personal Bot for Discord 
+My Personal Bot for Discord (CURRENTLY OUTDATED)
 
 ## Commands
 - !clear (number) - Deletes messages of the channel given a number ranging from 2 - 100 (Note: Works only if the messages are 14 days old)
