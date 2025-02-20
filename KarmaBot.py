@@ -1,120 +1,37 @@
 #!/usr/bin/env python3
 
-import discord
-import random
-import requests
-import praw
-import asyncio
+import praw # type: ignore
 import os
 
-import imgurbot
-import prawbot
-import bot_token
+from discord import Intents, Client, Message
+from dotenv import load_dotenv
 
-from discord.ext.commands import Bot
-from imgurpython import ImgurClient
-from imgurpython.helpers.error import ImgurClientError
+load_dotenv()
 
-description = 'KarmaBot'
-bot_prefix = '!'
+"""Load API Keys"""
+praw_client_id = os.getenv("PRAW_CLIENT_ID")
+praw_client_secret = os.getenv("PRAW_CLIENT_SECRET")
+praw_user_agent = os.getenv("PRAW_USER_AGENT")
 
-bot = Bot(description=description, command_prefix=bot_prefix)
+discord_api_token = os.getenv("DISCORD_API_TOKEN")
+discord_app_id = os.getenv("DISCORD_APP_ID")
+discord_user_name = os.getenv("DISCORD_USER_NAME")
 
-# Authorizing Imgur API
-client_id = imgurbot.client_id
-client_secret = imgurbot.client_secret
-imgur_client = ImgurClient(client_id, client_secret)
+intents: Intents = Intents.default()
+intents.message_content = True
+client = Client(intents=intents)
 
 # Authorizing Reddit API
-redditbot = praw.Reddit(client_id=prawbot.client_id,
-                        client_secret=prawbot.client_secret,
-                        user_agent=prawbot.user_agent)
+# redditbot = praw.Reddit(client_id=praw_client_id,
+#                         client_secret=praw_client_secret,
+#                         user_agent=praw_user_agent)
 
-"""Log in the discord bot"""
-@bot.event
-async def on_ready():
-    print('Logged in')
-    print('Name: {}'.format(bot.user.name))
-    print('ID : {}'.format(bot.user.id))
-    print(discord.__version__)
-    print('========')
-    await bot.change_presence(game=discord.Game(name='!reddit'))
+@client.event
+async def on_ready() -> None:
+    print(f'{client.user} is now running!')
 
+def main() -> None: 
+    client.run(token=discord_api_token)
 
-"""Bot commands go here"""
-
-# Clear messages up to 14 days old
-# Can only clear up to 2 to 100 messages at a time
-@bot.command(pass_context=True)
-async def clear(ctx, number):
-    number = int(number)
-    messages_to_delete = []
-
-    async for x in bot.logs_from(ctx.message.channel, limit=number):
-        messages_to_delete.append(x)
-    await bot.delete_messages(messages_to_delete)
-
-@bot.command()
-async def imgur(query: str):
-    subreddit = imgur_client.subreddit_gallery(
-        query, sort='top', window='day', page=0)
-
-    url_links = []
-    titles_of_link = []
-
-    for submission in subreddit:
-        titles_of_link.append(submission.title)
-        url_links.append(submission.link)
-
-    submissions = dict(zip(titles_of_link, url_links))
-
-    title, url_link = random.choice(list(submissions.items()))
-
-    embed = discord.Embed(title=title, url=url_link, color=0xff0404)
-    embed.set_image(url=url_link)
-    await bot.say(embed=embed)
-
-@bot.command()
-async def reddit(query: str):
-    subreddit = redditbot.subreddit(query)
-    title_of_links = []
-    url_links = []
-
-    for submission in subreddit.hot(limit=50):
-        title_of_links.append(submission.title)
-        url_links.append(submission.url)
-
-    submissions = dict(zip(title_of_links, url_links))
-
-    title, url_link = random.choice(list(submissions.items()))
-
-    embed = discord.Embed(title=title, url=url_link, color=0xff0404)
-    embed.set_image(url=url_link)
-    await bot.say(embed=embed)
-
-
-@bot.command()
-async def anime_irl():
-    subreddit = redditbot.subreddit('anime_irl')
-    title_of_links = []
-    url_links = []
-
-    for submission in subreddit.hot(limit=50):
-        title_of_links.append(submission.title)
-        url_links.append(submission.url)
-
-    submissions = dict(zip(title_of_links, url_links))
-
-    title, url_link = random.choice(list(submissions.items())
-
-    embed=discord.Embed(title=title, url=url_link, color=0xff0404)
-    embed.set_image(url=url_link)
-    await bot.say(embed=embed)
-
-@bot.command()
-async def BBB():
-    its_about_that_time='https://streamable.com/fu61x'
-    await bot.say(its_about_that_time)
-
-# Always put this last!!!
-bot.run(bot_token.token)
+if __name__ == '__main__':
+    main()
