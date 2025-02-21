@@ -44,7 +44,9 @@ class Client(commands.Bot):
 """ Load API Keys """
 praw_client_id = os.getenv("PRAW_CLIENT_ID")
 praw_client_secret = os.getenv("PRAW_CLIENT_SECRET")
+praw_password = os.getenv("PRAW_REDDIT_PASSWORD")
 praw_user_agent = os.getenv("PRAW_USER_AGENT")
+praw_user_name = os.getenv("PRAW_USER_NAME")
 
 discord_api_token = os.getenv("DISCORD_API_TOKEN")
 discord_app_id = os.getenv("DISCORD_APP_ID")
@@ -55,16 +57,17 @@ intents.message_content = True
 client = Client(command_prefix='!', intents=intents)
 
 # Changing the activity of the bot in discord
-game = discord.Game("Hello World!")
+game = discord.Game("Bite my shiny ass")
 
 # Authorizing Reddit API
-# redditbot = praw.Reddit(client_id=praw_client_id,
-#                         client_secret=praw_client_secret,
-#                         user_agent=praw_user_agent)
+redditbot = praw.Reddit(client_id=praw_client_id,
+                        client_secret=praw_client_secret,
+                        password=praw_password,
+                        user_agent=praw_user_agent,
+                        username=praw_user_name
+                        )
 
 GUILD_ID = discord.Object(id=313180439483252737)
-
-ALLOWED_USERS = {274042160855121921}
 
 @client.tree.command(name="get_id", description="Get Discord User ID", guild=GUILD_ID)
 async def get_id(interaction: discord.Interaction, member: discord.Member = None):
@@ -76,18 +79,12 @@ async def get_id(interaction: discord.Interaction, member: discord.Member = None
 async def clear(interaction: discord.Interaction, amount: int):
     """
     Deletes the specified number of messages in the channel.
-    Only allowed users can use this command.
     Usage: !clear <number>
 
     """
-    
-    # if interaction.message.author.id not in ALLOWED_USERS:
-    #     await interaction.channel.send("You are not authorized to use this command.", delete_after=5)
-    #     return
 
     if amount < 1:
-        await interaction.response.defer()
-        await interaction.response.send_message("Please specify a number greater than 0.", delete_after=5)
+        await interaction.response.send_message("Please specifiy a number that is greater than 0.", delete_after=3)
         return
 
     deleted = await interaction.channel.purge(limit=amount)
